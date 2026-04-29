@@ -1,0 +1,6 @@
+{
+  "name": "S.RAM Robot Control System",
+  "description": "A professional robot monitoring and control dashboard featuring real-time telemetry and error tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
