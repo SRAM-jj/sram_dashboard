@@ -39,7 +39,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onLogout }: DashboardProps) {
-  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [time, setTime] = useState(new Date().toLocaleString('ko-KR'));
   const [motor1Data, setMotor1Data] = useState<any[]>([]);
   const [motor2Data, setMotor2Data] = useState<any[]>([]);
   const [telemetryData, setTelemetryData] = useState<any[]>([]);
@@ -234,7 +234,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      setTime(now.toLocaleTimeString());
+      setTime(now.toLocaleString('ko-KR'));
 
       // Update motor data
       setMotor1Data(prev => {
@@ -343,7 +343,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     <div className="dashboard-container" style={{ background: statusConfig.mainBg, overflowY: 'auto' }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="logo !text-3xl !mb-0 !text-left">
+        <h1 className="logo !text-3xl !mb-0 !text-left" style={{ textShadow: 'none' }}>
           S.R<span className="highlight">A</span>M
         </h1>
         <button 
