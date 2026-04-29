@@ -13,7 +13,7 @@ import {
 import { LogOut, Activity, AlertCircle, Cpu, Brain, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 // Mock data for motor 1
 const motor1Data = Array.from({ length: 12 }, (_, i) => ({
