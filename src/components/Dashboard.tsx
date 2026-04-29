@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  AreaChart,
-  Area
-} from 'recharts';
-import { LogOut, Activity, AlertCircle, Cpu, Brain, Loader2 } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import StatusBar from './dashboard/StatusBar';
+import MotorChartCard from './dashboard/MotorChartCard';
+import TelemetryOverview from './dashboard/TelemetryOverview';
+import AIAnalysisCard from './dashboard/AIAnalysisCard';
+import DetailView from './dashboard/DetailView';
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
@@ -345,268 +339,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     return () => clearInterval(timer);
   }, [selectedMotor]);
 
-  const renderMotorChart = (title: string, data: any[], motorId: 1 | 2) => (
-    <div className="chart-card flex-1">
-      <div className="chart-header">
-        <div className="flex items-center gap-4">
-          <div className="chart-legend">
-            <div className="legend-item">
-              <div className="legend-square bg-red-500" />
-              <span>토크</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-square bg-cyan-400" />
-              <span>속도</span>
-            </div>
-          </div>
-          <span className="chart-title">{title}</span>
-        </div>
-        <span 
-          className="chart-detail-btn"
-          onClick={() => {
-            setSelectedMotor(motorId);
-            setViewMode('detail');
-          }}
-        >
-          상세보기
-        </span>
-      </div>
-      <div className="flex-1 min-h-[180px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={true} horizontal={true} />
-            <XAxis 
-              dataKey="time" 
-              stroke="#666" 
-              fontSize={10} 
-              tick={{ fill: '#cdd1d9' }}
-            />
-            <YAxis 
-              yAxisId="left"
-              stroke="#ef4444" 
-              fontSize={10} 
-              domain={[-8, 4]}
-              ticks={[-8, -6, -4, -2, 0, 2, 4]}
-              tick={{ fill: '#ef4444' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis 
-              yAxisId="right"
-              orientation="right"
-              stroke="#22d3ee" 
-              fontSize={10} 
-              domain={[-1.2, 1.2]}
-              ticks={[-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2]}
-              tick={{ fill: '#22d3ee' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }}
-              itemStyle={{ fontSize: '12px' }}
-            />
-            <Line 
-              yAxisId="left"
-              type="monotone" 
-              dataKey="torque" 
-              stroke="#ef4444" 
-              strokeWidth={2} 
-              dot={false} 
-              isAnimationActive={false}
-            />
-            <Line 
-              yAxisId="right"
-              type="monotone" 
-              dataKey="speed" 
-              stroke="#22d3ee" 
-              strokeWidth={2} 
-              dot={false} 
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-
-  const renderDetailView = () => {
-    const currentData = selectedMotor === 1 ? motor1Data : motor2Data;
-    const otherMotor = selectedMotor === 1 ? 2 : 1;
-
-    return (
-      <div className="detail-view-container">
-        <div className="detail-main-card">
-          <div className="detail-header">
-            <div className="flex gap-6">
-              <div className="legend-item">
-                <div className="legend-square bg-red-500" />
-                <span className="text-sm text-white">토크</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-square bg-cyan-400" />
-                <span className="text-sm text-white">속도</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-square bg-[#eab308]" />
-                <span className="text-sm text-white">온도</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-square bg-[#22c55e]" />
-                <span className="text-sm text-white">토크</span>
-              </div>
-            </div>
-
-            <h2 className="detail-title">로봇팔 모터{selectedMotor} 작동현황</h2>
-
-            <div className="flex items-center gap-3">
-              <button 
-                className="motor-switch-btn"
-                onClick={() => setSelectedMotor(otherMotor)}
-              >
-                모터 {otherMotor}
-              </button>
-              <button 
-                className="exit-btn"
-                onClick={() => setViewMode('grid')}
-              >
-                <LogOut size={24} className="rotate-180" />
-              </button>
-            </div>
-          </div>
-
-          <div className="detail-charts-grid">
-            {/* Left Chart: Torque & Speed */}
-            <div className="detail-chart-box">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={currentData} margin={{ top: 20, right: 30, left: -20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="time" stroke="#666" fontSize={10} tick={{ fill: '#cdd1d9' }} dy={10} />
-                  <YAxis yAxisId="left" stroke="#ef4444" fontSize={10} domain={[-8, 4]} ticks={[-8, -6, -4, -2, 0, 2, 4]} tick={{ fill: '#ef4444' }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" stroke="#22d3ee" fontSize={10} domain={[-1.2, 1.2]} ticks={[-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2]} tick={{ fill: '#22d3ee' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }} />
-                  <Line yAxisId="left" type="monotone" dataKey="torque" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line yAxisId="right" type="monotone" dataKey="speed" stroke="#22d3ee" strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Right Column: Temp & Torque (Stacked like main dashboard) */}
-            <div className="detail-chart-box flex flex-col gap-0">
-              {/* Temperature Chart */}
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={telemetryData} margin={{ top: 10, right: 30, left: 20, bottom: 15 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} horizontal={false} />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="transparent" 
-                      fontSize={10} 
-                      tick={{ fill: '#cdd1d9' }} 
-                      dy={10}
-                      interval={0}
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={10} 
-                      ticks={[35, 40, 45]} 
-                      tickFormatter={(val) => `${val}°C —`} 
-                      domain={[29.8, 46]} 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#cdd1d9' }}
-                      width={60}
-                    />
-                    <Tooltip contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }} />
-                    {/* Motor Temperature (Yellow) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey={selectedMotor === 1 ? "m1_temp" : "m2_temp"} 
-                      stroke="#facc15" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#facc15' }} 
-                      isAnimationActive={false} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Torque Chart */}
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={telemetryData} margin={{ top: -10, right: 30, left: 20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} horizontal={false} />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="transparent" 
-                      fontSize={10} 
-                      tick={{ fill: '#cdd1d9' }} 
-                      dy={10}
-                      interval={0}
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={10} 
-                      ticks={[15, 30, 50]} 
-                      tickFormatter={(val) => `${val} —`} 
-                      domain={[4.5, 65]} 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#cdd1d9' }}
-                      width={60}
-                    />
-                    <Tooltip contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }} />
-                    {/* Motor Torque (Green) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey={selectedMotor === 1 ? "m1_torque" : "m2_torque"} 
-                      stroke="#22c55e" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#22c55e' }} 
-                      isAnimationActive={false} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Detail Table */}
-        <div className="detail-table-card">
-          <h3 className="table-title">로봇팔 모터 상태 상세 목록</h3>
-          <div className="table-wrapper">
-            <table className="detail-table">
-              <thead>
-                <tr>
-                  <th>[모터 ID]</th>
-                  <th>[상태]</th>
-                  <th>[토크(Nm)]</th>
-                  <th>[속도(RPM)]</th>
-                  <th>[온도(°C)]</th>
-                  <th>[에러 코드]</th>
-                  <th>[최근 업데이트]</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detailLogs.map((log, i) => (
-                  <tr key={i}>
-                    <td>{log.id}</td>
-                    <td className={`status-${log.status.toLowerCase()}`}>{log.status}</td>
-                    <td className={log.torque > 3 ? 'text-yellow-500' : log.torque < 1 ? 'text-red-500' : ''}>{log.torque}</td>
-                    <td>{log.speed}</td>
-                    <td>{log.temp}</td>
-                    <td className={log.error !== '-' ? 'text-red-500' : ''}>{log.error}</td>
-                    <td>{log.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="dashboard-container" style={{ background: statusConfig.mainBg, overflowY: 'auto' }}>
       {/* Header */}
@@ -623,243 +355,51 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </button>
       </div>
 
-      {/* Status Bar */}
-      <div className="status-bar" style={{ 
-        backgroundColor: statusConfig.bg, 
-        borderColor: statusConfig.border,
-        borderWidth: '1px',
-        borderStyle: 'solid'
-      }}>
-        <div className="flex items-center gap-4">
-          <div className="status-badge flex items-center gap-2" style={{ color: statusConfig.color }}>
-            <Activity size={20} />
-            {statusConfig.label}
-          </div>
-        </div>
-        <div className="real-time-log">
-          Real_Time Log: {time}
-        </div>
-      </div>
+      <StatusBar time={time} statusConfig={statusConfig} />
 
       {/* Main Content */}
       {viewMode === 'grid' ? (
         <div className="grid-layout">
           {/* Left Column: Motor Status */}
           <div className="flex flex-col gap-5">
-            {renderMotorChart("로봇팔 모터1 작동현황", motor1Data, 1)}
-            {renderMotorChart("로봇팔 모터2 작동현황", motor2Data, 2)}
+            <MotorChartCard 
+              title="로봇팔 모터1 작동현황" 
+              data={motor1Data} 
+              motorId={1} 
+              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+            />
+            <MotorChartCard 
+              title="로봇팔 모터2 작동현황" 
+              data={motor2Data} 
+              motorId={2} 
+              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+            />
           </div>
 
           {/* Right Column: Telemetry (Temp & Torque) */}
-          <div className="chart-card flex flex-col gap-4">
-            <div className="chart-header !mb-0 grid grid-cols-3 items-center w-full">
-              <div className="chart-legend flex gap-4">
-                <div className="legend-item">
-                  <div className="legend-square bg-red-500" />
-                  <span>온도</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-square bg-cyan-400" />
-                  <span>토크</span>
-                </div>
-              </div>
-              <span className="chart-title text-center text-[#02D6A3] font-bold">ERROR FREQUENCY</span>
-              <div className="chart-legend flex gap-4 justify-end">
-                <div className="legend-item">
-                  <div className="legend-square bg-yellow-500" />
-                  <span>모터1</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-square bg-green-500" />
-                  <span>모터2</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Temperature Chart */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={telemetryData} margin={{ top: 20, right: 30, left: 40, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} horizontal={false} />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="transparent" 
-                      fontSize={10} 
-                      tick={{ fill: '#cdd1d9' }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={10} 
-                      ticks={[35, 40, 45]}
-                      tickFormatter={(val) => `${val}°C —`}
-                      domain={[29.5, 46]}
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#cdd1d9' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }}
-                      itemStyle={{ fontSize: '12px' }}
-                    />
-                    {/* Static Baseline (Red) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="ref_temp" 
-                      stroke="#ef4444" 
-                      strokeWidth={4} 
-                      dot={{ r: 4, fill: '#ef4444' }} 
-                      isAnimationActive={false}
-                    />
-                    {/* Motor 1 (Yellow) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="m1_temp" 
-                      stroke="#facc15" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#facc15' }} 
-                      isAnimationActive={false}
-                    />
-                    {/* Motor 2 (Green) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="m2_temp" 
-                      stroke="#22c55e" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#22c55e' }} 
-                      isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Torque Chart */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={telemetryData} margin={{ top: 20, right: 30, left: 40, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} horizontal={false} />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="transparent" 
-                      fontSize={10} 
-                      tick={{ fill: '#cdd1d9' }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={10} 
-                      ticks={[15, 30, 50]}
-                      tickFormatter={(val) => `${val} —`}
-                      domain={[10, 60]}
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#cdd1d9' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#16171d', border: '1px solid #333' }}
-                      itemStyle={{ fontSize: '12px' }}
-                    />
-                    {/* Static Baseline (Blue) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="ref_torque" 
-                      stroke="#22d3ee" 
-                      strokeWidth={4} 
-                      dot={{ r: 4, fill: '#22d3ee' }} 
-                      isAnimationActive={false}
-                    />
-                    {/* Motor 1 (Yellow) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="m1_torque" 
-                      stroke="#facc15" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#facc15' }} 
-                      isAnimationActive={false}
-                    />
-                    {/* Motor 2 (Green) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="m2_torque" 
-                      stroke="#22c55e" 
-                      strokeWidth={4} 
-                      dot={{ r: 6, fill: '#22c55e' }} 
-                      isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+          <TelemetryOverview data={telemetryData} />
           
-          {/* Combined System Message & AI Analysis Window (Visible in WARNING, DANGER, ERROR states) */}
-          {systemStatus !== 'SAFE' && (
-            <div className="col-span-2 mt-5 rounded-lg border overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ 
-              backgroundColor: `${statusConfig.color}08`, 
-              borderColor: statusConfig.border,
-              borderWidth: '1px'
-            }}>
-              {/* Top Section: System Status Message */}
-              <div className="p-4 border-b" style={{ borderColor: `${statusConfig.color}20`, backgroundColor: `${statusConfig.color}10` }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: statusConfig.color }} />
-                  <span className="font-bold text-lg" style={{ color: statusConfig.color }}>{statusConfig.message}</span>
-                </div>
-                <div className="text-sm text-gray-300 space-y-1">
-                  <p><span className="text-gray-500 mr-2">●</span>{statusConfig.reason}</p>
-                  <p><span className="text-gray-500 mr-2">●</span>{statusConfig.action}</p>
-                </div>
-              </div>
-
-              {/* Bottom Section: AI Analysis */}
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2" style={{ color: statusConfig.color }}>
-                    <Brain size={20} className={isAnalyzing ? "animate-pulse" : ""} />
-                    <span className="font-bold text-sm tracking-wider uppercase">AI SYSTEM DIAGNOSIS</span>
-                  </div>
-                  {isAnalyzing && (
-                    <div className="flex items-center gap-2 text-xs opacity-70" style={{ color: statusConfig.color }}>
-                      <Loader2 size={14} className="animate-spin" />
-                      분석 중...
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm leading-relaxed text-gray-200 min-h-[60px] bg-black/20 p-3 rounded border" style={{ borderColor: `${statusConfig.color}15` }}>
-                  {isAnalyzing ? (
-                    <div className="space-y-2">
-                      <div className="h-4 rounded w-3/4 animate-pulse" style={{ backgroundColor: `${statusConfig.color}15` }} />
-                      <div className="h-4 rounded w-1/2 animate-pulse" style={{ backgroundColor: `${statusConfig.color}15` }} />
-                    </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap">{llmAnalysis || "데이터 분석을 대기 중입니다..."}</p>
-                  )}
-                </div>
-                {!isAnalyzing && llmAnalysis && (
-                  <div className="mt-3 flex justify-end">
-                    <button 
-                      onClick={generateAnalysis}
-                      className="text-[10px] px-3 py-1 rounded transition-all hover:brightness-125"
-                      style={{ 
-                        backgroundColor: `${statusConfig.color}25`,
-                        color: statusConfig.color,
-                        border: `1px solid ${statusConfig.color}40`
-                      }}
-                    >
-                      재분석 요청
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Combined System Message & AI Analysis Window */}
+          <AIAnalysisCard 
+            systemStatus={systemStatus} 
+            statusConfig={statusConfig} 
+            isAnalyzing={isAnalyzing} 
+            llmAnalysis={llmAnalysis} 
+            onGenerateAnalysis={generateAnalysis} 
+          />
         </div>
       ) : (
-        renderDetailView()
+        <DetailView 
+          motor1Data={motor1Data}
+          motor2Data={motor2Data}
+          telemetryData={telemetryData}
+          detailLogs={detailLogs}
+          selectedMotor={selectedMotor}
+          setSelectedMotor={setSelectedMotor}
+          setViewMode={setViewMode}
+        />
       )}
     </div>
   );
 }
+
