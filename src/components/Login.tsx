@@ -1,8 +1,16 @@
-import { useState } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 
-function App() {
+interface LoginProps {
+  onLogin: () => void;
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onLogin();
+  };
 
   return (
     <div className="login-container">
@@ -11,16 +19,18 @@ function App() {
           S.R<span className="highlight">A</span>M
         </h1>
         
-        <form className="login-form">
+        <form className="login-form" onSubmit={handleSubmit}>
           <input 
             type="text" 
             placeholder="username" 
             className="input-field" 
+            required
           />
           <input 
             type={showPassword ? "text" : "password"} 
             placeholder="password" 
             className="input-field" 
+            required
           />
           
           <div className="checkbox-group">
@@ -40,5 +50,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
