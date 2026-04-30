@@ -7,7 +7,7 @@ interface TelemetryOverviewProps {
 
 export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
   return (
-    <div className="chart-card flex flex-col gap-4">
+    <div className="chart-card h-full flex flex-col gap-4">
       <div className="chart-header !mb-0 grid grid-cols-3 items-center w-full">
         <div className="chart-legend flex gap-4">
           <div className="legend-item">
@@ -64,8 +64,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="ref_temp" 
                 stroke="#ef4444" 
-                strokeWidth={4} 
-                dot={{ r: 4, fill: '#ef4444' }} 
+                strokeWidth={2} 
+                dot={{ r: 2, fill: '#ef4444' }} 
                 isAnimationActive={false}
               />
               {/* Motor 1 (Yellow) */}
@@ -73,8 +73,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="m1_temp" 
                 stroke="#facc15" 
-                strokeWidth={4} 
-                dot={{ r: 6, fill: '#facc15' }} 
+                strokeWidth={2} 
+                dot={{ r: 3, fill: '#facc15' }} 
                 isAnimationActive={false}
               />
               {/* Motor 2 (Green) */}
@@ -82,8 +82,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="m2_temp" 
                 stroke="#22c55e" 
-                strokeWidth={4} 
-                dot={{ r: 6, fill: '#22c55e' }} 
+                strokeWidth={2} 
+                dot={{ r: 3, fill: '#22c55e' }} 
                 isAnimationActive={false}
               />
             </LineChart>
@@ -123,8 +123,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="ref_torque" 
                 stroke="#22d3ee" 
-                strokeWidth={4} 
-                dot={{ r: 4, fill: '#22d3ee' }} 
+                strokeWidth={2} 
+                dot={{ r: 2, fill: '#22d3ee' }} 
                 isAnimationActive={false}
               />
               {/* Motor 1 (Yellow) */}
@@ -132,8 +132,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="m1_torque" 
                 stroke="#facc15" 
-                strokeWidth={4} 
-                dot={{ r: 6, fill: '#facc15' }} 
+                strokeWidth={2} 
+                dot={{ r: 3, fill: '#facc15' }} 
                 isAnimationActive={false}
               />
               {/* Motor 2 (Green) */}
@@ -141,8 +141,8 @@ export default function TelemetryOverview({ data }: TelemetryOverviewProps) {
                 type="monotone" 
                 dataKey="m2_torque" 
                 stroke="#22c55e" 
-                strokeWidth={4} 
-                dot={{ r: 6, fill: '#22c55e' }} 
+                strokeWidth={2} 
+                dot={{ r: 3, fill: '#22c55e' }} 
                 isAnimationActive={false}
               />
             </LineChart>
