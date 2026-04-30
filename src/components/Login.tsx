@@ -27,7 +27,7 @@ export default function Login({ onLogin }: LoginProps) {
         delayChildren: 0.2
       }
     }
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
@@ -36,7 +36,7 @@ export default function Login({ onLogin }: LoginProps) {
       y: 0,
       transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
     }
-  };
+  } as const;
 
   return (
     <div className="login-page">
