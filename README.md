@@ -78,26 +78,15 @@ npm run clean     # dist 폴더 제거
 ## 4. 디렉터리 구조
 
 ```text
-.
-├── public/
-│   └── robot.glb              # 3D 로봇 모델 (Node1~Node9, 평탄 구조)
-├── src/
-│   ├── main.tsx               # 엔트리. React 트리 마운트
-│   ├── App.tsx                # 로그인 ↔ 대시보드 전환
-│   ├── index.css              # Tailwind + 글로벌 스타일
-│   └── components/
-│       ├── Login.tsx
-│       ├── Dashboard.tsx      # 상태 관리 + mock 데이터 + 자식 조립
-│       └── dashboard/
-│           ├── StatusBar.tsx
-│           ├── MotorChartCard.tsx
-│           ├── TelemetryOverview.tsx
-│           ├── AIAnalysisCard.tsx
-│           ├── DetailView.tsx
-│           └── RobotModel.tsx  # ⭐ 3D 뷰. 아래 5장에서 자세히 설명
-├── index.html                 # Google Fonts <link> 포함
-├── vite.config.ts
-└── tsconfig.json
+src/components/
+├── dashboard/
+│   ├── RobotModel.tsx       # Three.js 기반 3D 로봇팔 시뮬레이션
+│   ├── MotorChartCard.tsx   # 개별 모터 데이터 시각화 차트
+│   ├── TelemetryOverview.tsx # 시스템 전반 텔레메트리 요약
+│   ├── AIAnalysisCard.tsx    # Gemini API 기반 AI 분석 결과 표시
+│   └── DetailView.tsx       # 모터별 상세 로그 및 정밀 분석 뷰
+├── Dashboard.tsx            # 메인 대시보드 레이아웃 및 데이터 관리
+└── Login.tsx                # 현대적인 애니메이션이 적용된 로그인 화면
 ```
 
 ---
