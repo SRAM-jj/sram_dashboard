@@ -16,10 +16,32 @@ export default function AIAnalysisCard({
   llmAnalysis, 
   onGenerateAnalysis 
 }: AIAnalysisCardProps) {
-  if (systemStatus === 'SAFE') return null;
+  if (systemStatus === 'SAFE') {
+    return (
+      <div className="mt-2 rounded-lg border overflow-hidden" style={{ 
+        backgroundColor: 'rgba(2, 214, 163, 0.05)', 
+        borderColor: 'rgba(2, 214, 163, 0.15)',
+        borderWidth: '1px'
+      }}>
+        <div className="p-4 flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#02D6A3' }} />
+          <span className="font-bold text-sm" style={{ color: '#02D6A3' }}>SYSTEM SAFE: 정상 작동 중</span>
+        </div>
+        <div className="p-4 pt-0">
+          <div className="flex items-center gap-2" style={{ color: '#02D6A3' }}>
+            <Brain size={18} />
+            <span className="font-bold text-xs tracking-wider uppercase">AI SYSTEM DIAGNOSIS</span>
+          </div>
+          <div className="text-sm text-gray-500 mt-2 bg-black/20 p-3 rounded border" style={{ borderColor: 'rgba(2, 214, 163, 0.1)' }}>
+            모든 시스템 파라미터가 정상 범위 내에 있습니다. 이상 징후 없음.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="col-span-2 mt-5 rounded-lg border overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ 
+    <div className="mt-2 rounded-lg border overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ 
       backgroundColor: `${statusConfig.color}08`, 
       borderColor: statusConfig.border,
       borderWidth: '1px'

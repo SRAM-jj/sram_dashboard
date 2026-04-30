@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import StatusBar from './dashboard/StatusBar';
 import MotorChartCard from './dashboard/MotorChartCard';
@@ -8,7 +8,12 @@ import AIAnalysisCard from './dashboard/AIAnalysisCard';
 import DetailView from './dashboard/DetailView';
 import RobotModel from './dashboard/RobotModel';
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
+// AI 클라이언트를 동적으로 생성하는 함수 (localStorage 키 우선)
+const getAIClient = () => {
+  const localKey = localStorage.getItem('sram_api_key');
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+  return new GoogleGenAI({ apiKey: localKey || envKey });
+};
 
 // Mock data for motor 1
 const motor1Data = Array.from({ length: 12 }, (_, i) => ({
@@ -37,9 +42,10 @@ const telemetryData = Array.from({ length: 10 }, (_, i) => ({
 
 interface DashboardProps {
   onLogout: () => void;
+  onOpenSettings: () => void;
 }
 
-export default function Dashboard({ onLogout }: DashboardProps) {
+export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) {
   const [time, setTime] = useState(new Date().toLocaleString('ko-KR'));
   const [motor1Data, setMotor1Data] = useState<any[]>([]);
   const [motor2Data, setMotor2Data] = useState<any[]>([]);
@@ -124,6 +130,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         이 상황에 대해 어떤 모터에 어떤 문제가 있는지 명확히 명시하고, 전문가적인 분석과 권장 조치를 3문장 이내로 작성해줘.
       `;
 
+      const ai = getAIClient();
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: prompt,
@@ -332,7 +339,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
         };
 
-        // Put newest at the beginning, keep last 9
         return [newLogEntry, ...prev.slice(0, 9)];
       });
     }, 3000);
@@ -341,47 +347,56 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   }, [selectedMotor]);
 
   return (
-    <div className="dashboard-container" style={{ background: statusConfig.mainBg, overflowY: 'auto' }}>
+    <div className="dashboard-container" style={{ background: statusConfig.mainBg }}>
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="logo !text-3xl !mb-0 !text-left" style={{ textShadow: 'none' }}>
+      <div className="flex justify-between items-center flex-shrink-0">
+        <h1 className="logo !text-2xl !mb-0 !text-left" style={{ textShadow: 'none' }}>
           S.R<span className="highlight">A</span>M
         </h1>
-        <button 
-          onClick={onLogout}
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          <LogOut size={16} />
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onOpenSettings}
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+            title="Settings"
+          >
+            <SettingsIcon size={18} />
+          </button>
+          <button 
+            onClick={onLogout}
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
       </div>
 
       <StatusBar time={time} statusConfig={statusConfig} />
 
-      {/* Main Content */}
+      {/* Main Content — 3-Column Single-Screen Layout */}
       {viewMode === 'grid' ? (
-        <div className="flex flex-col gap-8 overflow-y-auto pr-2 custom-scrollbar" style={{ height: 'calc(100vh - 140px)' }}>
-          <div className="grid-layout">
-            {/* Left Column: Motor Status */}
-            <div className="flex flex-col gap-5">
-              <MotorChartCard 
-                title="로봇팔 모터1 작동현황" 
-                data={motor1Data} 
-                motorId={1} 
-                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
-              />
-              <MotorChartCard 
-                title="로봇팔 모터2 작동현황" 
-                data={motor2Data} 
-                motorId={2} 
-                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
-              />
-            </div>
+        <div className="dashboard-grid">
+          {/* Left Column: Motor Charts */}
+          <div className="flex flex-col gap-3">
+            <MotorChartCard 
+              title="로봇팔 모터1 작동현황" 
+              data={motor1Data} 
+              motorId={1} 
+              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+            />
+            <MotorChartCard 
+              title="로봇팔 모터2 작동현황" 
+              data={motor2Data} 
+              motorId={2} 
+              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+            />
+          </div>
 
-            {/* Right Column: Telemetry (Temp & Torque) */}
-            <TelemetryOverview data={telemetryData} />
-            
-            {/* Third Grid Item: AI Analysis Card (goes to next row in 2-col grid) */}
+          {/* Center Column: Telemetry + AI Analysis */}
+          <div className="flex flex-col gap-3 min-h-0">
+            <div className="flex-1 min-h-0">
+              <TelemetryOverview data={telemetryData} />
+            </div>
             <AIAnalysisCard 
               systemStatus={systemStatus} 
               statusConfig={statusConfig} 
@@ -390,11 +405,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
               onGenerateAnalysis={generateAnalysis} 
             />
           </div>
-          
-          {/* Bottom Area: 3D Robot Model Simulation */}
-          <div className="w-full mt-4 pb-10">
-            <RobotModel latestData={telemetryData[telemetryData.length - 1]} />
-          </div>
+
+          {/* Right Column: 3D Robot Model */}
+          <RobotModel latestData={telemetryData[telemetryData.length - 1]} />
         </div>
       ) : (
         <DetailView 
@@ -410,4 +423,3 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     </div>
   );
 }
-

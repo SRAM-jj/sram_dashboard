@@ -75,7 +75,7 @@ export default function DetailView({
             </div>
           </div>
 
-          <h2 className="detail-title !text-lg">로봇팔 모터{selectedMotor} 작동현황</h2>
+          <h2 className="detail-title !text-lg flex-1 text-center">로봇팔 모터{selectedMotor} 작동현황</h2>
 
           <div className="flex items-center gap-3">
             <button
