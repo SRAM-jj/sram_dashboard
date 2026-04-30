@@ -56,18 +56,22 @@ export default function DetailView({
         style={{ height: lockedChartHeight ? `${lockedChartHeight}px` : undefined }}
       >
         <div className="detail-header !mb-2 flex justify-between items-center shrink-0">
-          <div className="flex gap-6 w-1/4">
-            <div className="legend-item">
-              <div className="legend-square bg-red-500" />
-              <span className="text-xs text-white">토크</span>
+          <div className="flex gap-4 w-1/4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#ef4444' }} />
+              <span className="text-xs text-gray-300">토크</span>
             </div>
-            <div className="legend-item">
-              <div className="legend-square bg-cyan-400" />
-              <span className="text-xs text-white">속도</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#22d3ee' }} />
+              <span className="text-xs text-gray-300">속도</span>
             </div>
-            <div className="legend-item">
-              <div className="legend-square bg-[#eab308]" />
-              <span className="text-xs text-white">온도</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#eab308' }} />
+              <span className="text-xs text-gray-300">온도</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#02D6A3' }} />
+              <span className="text-xs text-gray-300">토크</span>
             </div>
           </div>
 
