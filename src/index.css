@@ -29,8 +29,6 @@
   }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
 .login-page {
   background: radial-gradient(circle at top right, rgba(2, 214, 163, 0.05), transparent 40%),
               radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.05), transparent 40%),
