@@ -56,7 +56,7 @@ export default function DetailView({
         style={{ height: lockedChartHeight ? `${lockedChartHeight}px` : undefined }}
       >
         <div className="detail-header !mb-2 flex justify-between items-center shrink-0">
-          <div className="flex gap-6">
+          <div className="flex gap-6 w-1/4">
             <div className="legend-item">
               <div className="legend-square bg-red-500" />
               <span className="text-xs text-white">토크</span>
@@ -69,15 +69,13 @@ export default function DetailView({
               <div className="legend-square bg-[#eab308]" />
               <span className="text-xs text-white">온도</span>
             </div>
-            <div className="legend-item">
-              <div className="legend-square bg-[#22c55e]" />
-              <span className="text-xs text-white">토크</span>
-            </div>
           </div>
 
-          <h2 className="detail-title !text-lg flex-1 text-center">로봇팔 모터{selectedMotor} 작동현황</h2>
+          <h2 className="detail-title !text-lg flex-1 text-center font-bold text-white">
+            로봇팔 모터{selectedMotor} 작동현황
+          </h2>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-1/4 justify-end">
             <button
               className="motor-switch-btn !py-1 !px-3 !text-xs"
               onClick={() => setSelectedMotor(otherMotor)}
