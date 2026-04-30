@@ -6,6 +6,7 @@ import MotorChartCard from './dashboard/MotorChartCard';
 import TelemetryOverview from './dashboard/TelemetryOverview';
 import AIAnalysisCard from './dashboard/AIAnalysisCard';
 import DetailView from './dashboard/DetailView';
+import RobotModel from './dashboard/RobotModel';
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
@@ -359,34 +360,41 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
       {/* Main Content */}
       {viewMode === 'grid' ? (
-        <div className="grid-layout">
-          {/* Left Column: Motor Status */}
-          <div className="flex flex-col gap-5">
-            <MotorChartCard 
-              title="로봇팔 모터1 작동현황" 
-              data={motor1Data} 
-              motorId={1} 
-              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
-            />
-            <MotorChartCard 
-              title="로봇팔 모터2 작동현황" 
-              data={motor2Data} 
-              motorId={2} 
-              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+        <div className="flex flex-col gap-8 overflow-y-auto pr-2 custom-scrollbar" style={{ height: 'calc(100vh - 140px)' }}>
+          <div className="grid-layout">
+            {/* Left Column: Motor Status */}
+            <div className="flex flex-col gap-5">
+              <MotorChartCard 
+                title="로봇팔 모터1 작동현황" 
+                data={motor1Data} 
+                motorId={1} 
+                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+              />
+              <MotorChartCard 
+                title="로봇팔 모터2 작동현황" 
+                data={motor2Data} 
+                motorId={2} 
+                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+              />
+            </div>
+
+            {/* Right Column: Telemetry (Temp & Torque) */}
+            <TelemetryOverview data={telemetryData} />
+            
+            {/* Third Grid Item: AI Analysis Card (goes to next row in 2-col grid) */}
+            <AIAnalysisCard 
+              systemStatus={systemStatus} 
+              statusConfig={statusConfig} 
+              isAnalyzing={isAnalyzing} 
+              llmAnalysis={llmAnalysis} 
+              onGenerateAnalysis={generateAnalysis} 
             />
           </div>
-
-          {/* Right Column: Telemetry (Temp & Torque) */}
-          <TelemetryOverview data={telemetryData} />
           
-          {/* Combined System Message & AI Analysis Window */}
-          <AIAnalysisCard 
-            systemStatus={systemStatus} 
-            statusConfig={statusConfig} 
-            isAnalyzing={isAnalyzing} 
-            llmAnalysis={llmAnalysis} 
-            onGenerateAnalysis={generateAnalysis} 
-          />
+          {/* Bottom Area: 3D Robot Model Simulation */}
+          <div className="w-full mt-4 pb-10">
+            <RobotModel latestData={telemetryData[telemetryData.length - 1]} />
+          </div>
         </div>
       ) : (
         <DetailView 
