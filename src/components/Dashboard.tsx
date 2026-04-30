@@ -7,6 +7,7 @@ import TelemetryOverview from './dashboard/TelemetryOverview';
 import AIAnalysisCard from './dashboard/AIAnalysisCard';
 import DetailView from './dashboard/DetailView';
 import RobotModel from './dashboard/RobotModel';
+import AINodeMonitor from './AINodeMonitor';
 
 // AI 클라이언트를 동적으로 생성하는 함수 (localStorage 키 우선)
 const getAIClient = () => {
@@ -46,18 +47,24 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) {
+  const [activeTab, setActiveTab] = useState<'robot' | 'ai' | 'logs'>('robot');
   const [time, setTime] = useState(new Date().toLocaleString('ko-KR'));
-  const [motor1Data, setMotor1Data] = useState<any[]>([]);
-  const [motor2Data, setMotor2Data] = useState<any[]>([]);
-  const [telemetryData, setTelemetryData] = useState<any[]>([]);
+  const [m1Data, setM1Data] = useState<any[]>([]);
+  const [m2Data, setM2Data] = useState<any[]>([]);
+  const [telData, setTelData] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'detail'>('grid');
   const [selectedMotor, setSelectedMotor] = useState<1 | 2>(1);
   const [detailLogs, setDetailLogs] = useState<any[]>([]);
   const [systemStatus, setSystemStatus] = useState<'SAFE' | 'WARNING' | 'DANGER' | 'ERROR'>('SAFE');
   const [llmAnalysis, setLlmAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Refs for status control
   const statusHoldRef = useRef(0);
   const currentTargetStateRef = useRef<'SAFE' | 'WARNING' | 'DANGER' | 'ERROR'>('SAFE');
+  
+  // AI MLOps 관련 가상 상태
+  const [gpuStats, setGpuStats] = useState({ vram: 45, temp: 52, tokens: 0, queue: 0 });
 
   // Determine system status based on latest telemetry
   useEffect(() => {
@@ -232,9 +239,9 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
       time: new Date(Date.now() - (10 - i) * 3000).toLocaleTimeString('ko-KR', { hour12: false }),
     }));
 
-    setMotor1Data(initialMotor1);
-    setMotor2Data(initialMotor2);
-    setTelemetryData(initialTelemetry);
+    setM1Data(initialMotor1);
+    setM2Data(initialMotor2);
+    setTelData(initialTelemetry);
     setDetailLogs(initialLogs);
   }, []); // Run only once on mount
 
@@ -245,7 +252,7 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
       setTime(now.toLocaleString('ko-KR'));
 
       // Update motor data
-      setMotor1Data(prev => {
+      setM1Data(prev => {
         if (prev.length === 0) return prev;
         const next = [...prev.slice(1)];
         const lastTime = parseFloat(prev[prev.length - 1].time);
@@ -257,7 +264,7 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
         return next;
       });
 
-      setMotor2Data(prev => {
+      setM2Data(prev => {
         if (prev.length === 0) return prev;
         const next = [...prev.slice(1)];
         const lastTime = parseFloat(prev[prev.length - 1].time);
@@ -299,35 +306,32 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
         case 'ERROR': baseTemp = 47; baseTorque = 55; break;
       }
 
-      const newTelemetryEntry = {
-        time: now.toLocaleTimeString('ko-KR', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        ref_temp: 30,
-        ref_torque: 5,
-        m1_temp: baseTemp + (Math.random() - 0.5) * 4,
-        m2_temp: baseTemp - 5 + (Math.random() - 0.5) * 4,
-        m1_torque: baseTorque + (Math.random() - 0.5) * 6,
-        m2_torque: baseTorque - 10 + (Math.random() - 0.5) * 6,
-      };
-
-      setTelemetryData(prev => [...prev.slice(1), newTelemetryEntry]);
+      setTelData(prev => {
+        const newTel = {
+          time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
+          m1_temp: targetState === 'SAFE' ? 30 + Math.random() * 5 : 45 + Math.random() * 15,
+          m2_temp: targetState === 'SAFE' ? 25 + Math.random() * 5 : 35 + Math.random() * 10,
+          m1_torque: targetState === 'SAFE' ? 5 + Math.random() * 5 : 25 + Math.random() * 15,
+          m2_torque: targetState === 'SAFE' ? 3 + Math.random() * 4 : 15 + Math.random() * 10,
+          ref_temp: 30,
+          ref_torque: 5,
+        };
+        return [...prev.slice(1), newTel];
+      });
 
       setDetailLogs(prev => {
-        const torque = selectedMotor === 1 ? newTelemetryEntry.m1_torque : newTelemetryEntry.m2_torque;
-        const temp = selectedMotor === 1 ? newTelemetryEntry.m1_temp : newTelemetryEntry.m2_temp;
+        if (!telData || telData.length === 0) return prev;
+        const latestEntry = telData[telData.length - 1];
+        if (!latestEntry) return prev;
+
+        const torque = selectedMotor === 1 ? latestEntry.m1_torque : latestEntry.m2_torque;
+        const temp = selectedMotor === 1 ? latestEntry.m1_temp : latestEntry.m2_temp;
         
         let status: 'Safe' | 'Warning' | 'Danger' | 'Error' = 'Safe';
         let errorCode = '-';
-
-        if (torque > 50 || temp > 45) {
-          status = 'Error';
-          errorCode = `E${selectedMotor}03`;
-        } else if (torque > 30 || temp > 40) {
-          status = 'Danger';
-          errorCode = `E${selectedMotor}02`;
-        } else if (torque > 15 || temp > 35) {
-          status = 'Warning';
-          errorCode = `E${selectedMotor}01`;
-        }
+        if (torque > 50 || temp > 45) { status = 'Error'; errorCode = `E${selectedMotor}03`; }
+        else if (torque > 30 || temp > 40) { status = 'Danger'; errorCode = `E${selectedMotor}02`; }
+        else if (torque > 15 || temp > 35) { status = 'Warning'; errorCode = `E${selectedMotor}01`; }
 
         const newLogEntry = {
           id: selectedMotor === 1 ? 'M1' : 'M2',
@@ -339,7 +343,7 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
           time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
         };
 
-        return [newLogEntry, ...prev.slice(0, 9)];
+        return [newLogEntry, ...prev.slice(0, 19)];
       });
     }, 3000);
 
@@ -350,9 +354,44 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
     <div className="dashboard-container" style={{ background: statusConfig.mainBg }}>
       {/* Header */}
       <div className="flex justify-between items-center flex-shrink-0">
-        <h1 className="logo !text-2xl !mb-0 !text-left" style={{ textShadow: 'none' }}>
-          S.R<span className="highlight">A</span>M
-        </h1>
+        <div className="flex items-center gap-8">
+          <h1 className="logo !text-2xl !mb-0 !text-left" style={{ textShadow: 'none' }}>
+            S.R<span className="highlight">A</span>M
+          </h1>
+
+          <nav className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10">
+            <button
+              onClick={() => setActiveTab('robot')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'robot' 
+                ? 'bg-[#02D6A3] text-black shadow-lg shadow-[#02D6A3]/20' 
+                : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Robot View
+            </button>
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'ai' 
+                ? 'bg-[#02D6A3] text-black shadow-lg shadow-[#02D6A3]/20' 
+                : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              AI Performance
+            </button>
+            <button
+              onClick={() => setActiveTab('logs')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'logs' 
+                ? 'bg-[#02D6A3] text-black shadow-lg shadow-[#02D6A3]/20' 
+                : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              History Archive
+            </button>
+          </nav>
+        </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={onOpenSettings}
@@ -375,45 +414,58 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
 
       {/* Main Content — 3-Column Single-Screen Layout */}
       {viewMode === 'grid' ? (
-        <div className="dashboard-grid">
-          {/* Left Column: Motor Charts */}
-          <div className="flex flex-col gap-3">
-            <MotorChartCard 
-              title="로봇팔 모터1 작동현황" 
-              data={motor1Data} 
-              motorId={1} 
-              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
-            />
-            <MotorChartCard 
-              title="로봇팔 모터2 작동현황" 
-              data={motor2Data} 
-              motorId={2} 
-              onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
-            />
-          </div>
-
-          {/* Center Column: Telemetry + AI Analysis */}
-          <div className="flex flex-col gap-3 min-h-0">
-            <div className="flex-1 min-h-0">
-              <TelemetryOverview data={telemetryData} />
+        activeTab === 'robot' ? (
+          <div className="dashboard-grid">
+            {/* Left Column: Motor Charts */}
+            <div className="flex flex-col gap-3">
+              <MotorChartCard 
+                title="로봇팔 모터1 작동현황" 
+                data={m1Data} 
+                motorId={1} 
+                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+              />
+              <MotorChartCard 
+                title="로봇팔 모터2 작동현황" 
+                data={m2Data} 
+                motorId={2} 
+                onDetailClick={(id) => { setSelectedMotor(id); setViewMode('detail'); }} 
+              />
             </div>
-            <AIAnalysisCard 
-              systemStatus={systemStatus} 
-              statusConfig={statusConfig} 
-              isAnalyzing={isAnalyzing} 
-              llmAnalysis={llmAnalysis} 
-              onGenerateAnalysis={generateAnalysis} 
-            />
-          </div>
 
-          {/* Right Column: 3D Robot Model */}
-          <RobotModel latestData={telemetryData[telemetryData.length - 1]} />
-        </div>
+            {/* Center Column: Telemetry + AI Analysis */}
+            <div className="flex flex-col gap-3 min-h-0">
+              <div className="flex-1 min-h-0">
+                <TelemetryOverview data={telData} />
+              </div>
+              <AIAnalysisCard 
+                systemStatus={systemStatus} 
+                statusConfig={statusConfig} 
+                isAnalyzing={isAnalyzing} 
+                llmAnalysis={llmAnalysis} 
+                onGenerateAnalysis={generateAnalysis} 
+              />
+            </div>
+
+            {/* Right Column: 3D Robot Model */}
+            <RobotModel latestData={telData[telData.length - 1]} />
+          </div>
+        ) : activeTab === 'ai' ? (
+          <div className="flex-1 min-h-0">
+            <AINodeMonitor />
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center border border-white/10 rounded-3xl bg-white/5 backdrop-blur-xl">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-white mb-2">History Archive</h3>
+              <p className="text-gray-400">Database Log Management system is coming soon.</p>
+            </div>
+          </div>
+        )
       ) : (
         <DetailView 
-          motor1Data={motor1Data}
-          motor2Data={motor2Data}
-          telemetryData={telemetryData}
+          motor1Data={m1Data}
+          motor2Data={m2Data}
+          telemetryData={telData}
           detailLogs={detailLogs}
           selectedMotor={selectedMotor}
           setSelectedMotor={setSelectedMotor}
