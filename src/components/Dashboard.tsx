@@ -8,6 +8,7 @@ import AIAnalysisCard from './dashboard/AIAnalysisCard';
 import DetailView from './dashboard/DetailView';
 import RobotModel from './dashboard/RobotModel';
 import AINodeMonitor from './AINodeMonitor';
+import DBLogManager from './dashboard/DBLogManager';
 
 // AI 클라이언트를 동적으로 생성하는 함수 (localStorage 키 우선)
 const getAIClient = () => {
@@ -454,12 +455,7 @@ export default function Dashboard({ onLogout, onOpenSettings }: DashboardProps) 
             <AINodeMonitor />
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center border border-white/10 rounded-3xl bg-white/5 backdrop-blur-xl">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-white mb-2">History Archive</h3>
-              <p className="text-gray-400">Database Log Management system is coming soon.</p>
-            </div>
-          </div>
+          <DBLogManager />
         )
       ) : (
         <DetailView 
