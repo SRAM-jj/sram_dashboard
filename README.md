@@ -22,7 +22,7 @@
 ### 2.1. 탭 시스템 (Navigation)
 *   **Robot View**: 실시간 차트, 텔레메트리 데이터, 3D 디지털 트윈 모델 표시.
 *   **AI Performance**: 로컬 AI 서버의 하드웨어 리소스 및 추론 퍼포먼스 모니터링.
-*   **History Archive**: 데이터베이스에 저장된 과거 이력 및 로그 관리 (준비 중).
+*   **History Archive**: 데이터베이스에 저장된 모든 운영 기록을 실시간 조회, 필터링 및 CSV로 내보내는 통합 로그 관리 시스템.
 
 ### 2.2. 레이아웃 구성 (3-Column Grid)
 ```text
@@ -62,8 +62,9 @@ src/
 │   │   ├── MotorChartCard.tsx   # 모터 성능 데이터 시각화
 │   │   ├── AIAnalysisCard.tsx   # Gemini API 연동 자동 진단
 │   │   ├── TelemetryOverview.tsx # 시스템 전반 텔레메트리 요약
+│   │   ├── DBLogManager.tsx     # 데이터베이스 로그 관리 시스템 [NEW]
 │   │   └── DetailView.tsx       # 정밀 로그 및 차트 상세 분석
-│   ├── AINodeMonitor.tsx        # MLOps 전용 서버 모니터링 패널 [NEW]
+│   ├── AINodeMonitor.tsx        # MLOps 전용 서버 모니터링 패널
 │   ├── Dashboard.tsx            # 메인 레이아웃 및 탭 전환 관리
 │   ├── Settings.tsx             # 시스템 설정 (API 키, MQTT 등)
 │   └── Login.tsx                # 애니메이션 기반 로그인 인터페이스
@@ -107,9 +108,12 @@ src/
 ## 7. 향후 로드맵 (Roadmap)
 
 *   [ ] **Real-time Connectivity**: 실제 로봇 하드웨어와의 MQTT/WebSocket 연동.
-*   [ ] **History Archive Implementation**: 과거 로그 데이터베이스 연동 및 조회 기능.
+*   [x] **History Archive Implementation**: 과거 로그 데이터베이스 연동 및 조회 기능 완비.
 *   [ ] **Predictive Maintenance**: AI를 활용한 소모품 교체 주기 예측 모델 탑재.
-*   [ ] **Export System**: 분석 보고서 PDF 자동 생성 및 이메일 발송 기능.
+*   [x] **Export System**: 로그 데이터를 CSV로 즉시 추출하는 내보내기 기능 탑재.
+
+---
+© 2026 S.R.A.M Project. All rights reserved.
 
 ---
 © 2026 S.R.A.M Project. All rights reserved.
